@@ -65,6 +65,7 @@ public class MainActivity extends AppCompatActivity implements MainAdapter.OnIte
 
     private DatabaseHelper databaseHelper;
 
+    public static String ATRAKCIJA_ID = "ATRAKCIJA_ID";
     public static final String NOTIF_CHANNEL_ID = "notif_channel_007";
 
     private SharedPreferences prefs;
@@ -358,5 +359,13 @@ public class MainActivity extends AppCompatActivity implements MainAdapter.OnIte
     @Override
     public void onItemClick(int position) {
 
+        Intent i = new Intent( MainActivity.this, DetailsActivity.class );
+        try {
+            i.putExtra( ATRAKCIJA_ID, getDatabaseHelper().getAtrakcijaDao().queryForAll().get( position ).getmId() );
+            i.putExtra( "position", getDatabaseHelper().getAtrakcijaDao().queryForAll().get( position ).getmId() );
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        startActivity( i );
     }
 }
