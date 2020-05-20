@@ -145,7 +145,9 @@
                 android:layout_width="280dp"
                 android:layout_height="match_parent"
                 android:background="@color/colorPrimaryDark"
-                android:choiceMode="singleChoice" />
+                android:choiceMode="singleChoice"
+                android:divider="@android:color/holo_blue_bright"
+                android:dividerHeight="1dp"/>
 
         </RelativeLayout>
 
