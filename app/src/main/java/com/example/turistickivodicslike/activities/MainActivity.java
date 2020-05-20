@@ -85,6 +85,17 @@ public class MainActivity extends AppCompatActivity implements MainAdapter.OnIte
 
     }
 
+    public void showAtrakcija() {
+
+        final RecyclerView recyclerView = this.findViewById( R.id.rvList );
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager( this );
+        recyclerView.setLayoutManager( layoutManager );
+
+        MainAdapter adapter = new MainAdapter( getDatabaseHelper(), MainActivity.this );
+        recyclerView.setAdapter( adapter );
+
+    }
+
     private void refresh() {
 
         RecyclerView recyclerView = findViewById( R.id.rvList );
@@ -230,7 +241,7 @@ public class MainActivity extends AppCompatActivity implements MainAdapter.OnIte
                 switch (i) {
                     case 0:
                         title = "Lista atrakcija";
-
+                        showAtrakcija();
                         break;
                     case 1:
                         Toast.makeText( getBaseContext(), "Prikaz podesavanja", Toast.LENGTH_SHORT );
@@ -336,6 +347,12 @@ public class MainActivity extends AppCompatActivity implements MainAdapter.OnIte
             NotificationManager notificationManager = getSystemService( NotificationManager.class );
             notificationManager.createNotificationChannel( channel );
         }
+    }
+
+    @Override
+    protected void onResume() {
+        refresh();
+        super.onResume();
     }
 
     @Override
