@@ -5,4 +5,6 @@
     <string name="adrijana_savic">Adrijana Savic</string>
     <string name="toast_key">toast_setings</string>
     <string name="notif_key">notif_setings</string>
+    <string name="add">Dodavanje</string>
+    <string name="settings">Settings</string>
 </resources>

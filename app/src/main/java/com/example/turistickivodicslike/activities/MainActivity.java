@@ -10,6 +10,8 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Gravity;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -40,6 +42,35 @@ public class MainActivity extends AppCompatActivity {
         setupToolbar();
         fillDataDrawer();
         setupDrawer();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate( R.menu.menu, menu );
+        return super.onCreateOptionsMenu( menu );
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.add:
+
+                setTitle( "Dodavanje atrakcije" );
+                break;
+
+            case R.id.settings:
+                startActivity( new Intent( MainActivity.this, SettingsActivity.class ) );
+                setTitle( "Settings" );
+                break;
+
+            case R.id.action_about:
+                AboutDialog dialog = new AboutDialog( MainActivity.this );
+                dialog.show();
+                setTitle( "O aplikaciji" );
+                break;
+        }
+
+        return super.onOptionsItemSelected( item );
     }
 
     private void setupDrawer() {
