@@ -5,20 +5,29 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.view.Gravity;
 import android.view.Menu;
@@ -27,9 +36,11 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.turistickivodicslike.R;
@@ -39,6 +50,7 @@ import com.example.turistickivodicslike.db.model.Atrakcija;
 import com.example.turistickivodicslike.db.model.Slike;
 import com.example.turistickivodicslike.dialog.AboutDialog;
 import com.example.turistickivodicslike.settings.SettingsActivity;
+import com.example.turistickivodicslike.tools.Tools;
 import com.j256.ormlite.android.apptools.OpenHelperManager;
 
 import java.sql.SQLException;
@@ -64,14 +76,281 @@ public class DetailsActivity extends AppCompatActivity implements SlikaAdapter.O
     private RecyclerView rec_list;
     private SlikaAdapter adapter;
 
+    private SharedPreferences prefs;
+    public static final String NOTIF_CHANNEL_ID = "notif_channel_007";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate( savedInstanceState );
         setContentView( R.layout.activity_details );
 
+        showDetalji();
+
         setupToolbar();
         fillDataDrawer();
         setupDrawer();
+
+        createNotificationChannel();
+        prefs = PreferenceManager.getDefaultSharedPreferences( this );
+
+    }
+
+    private void refreshNekretnine() {
+        int nekretninaId = getIntent().getExtras().getInt( MainActivity.ATRAKCIJA_ID );
+
+        try {
+            atrakcija = getDatabaseHelper().getAtrakcijaDao().queryForId( nekretninaId );
+
+            TextView naziv = findViewById( R.id.detalji_naziv );
+            TextView opis = findViewById( R.id.detalji_opis );
+            TextView telefon = findViewById( R.id.detalji_telefon );
+            TextView adresa = findViewById( R.id.detalji_adresa );
+            TextView webAdresa = findViewById( R.id.detalji_webAdresa );
+            TextView radnoVreme = findViewById( R.id.detalji_radnoVreme );
+            TextView cena = findViewById( R.id.detalji_cena );
+
+
+            naziv.setText( atrakcija.getmNaziv() );
+            opis.setText( atrakcija.getmOpis() );
+            telefon.setText( atrakcija.getmBrojTelefona() );
+            adresa.setText( "Adresa: " + atrakcija.getmAdresa() );
+            webAdresa.setText( "Web adresa: " + atrakcija.getmWebAdresa() );
+            radnoVreme.setText( "Radno vreme: " + atrakcija.getmRadnoVreme() );
+            cena.setText( "Cena: " + atrakcija.getmCena() + " dinara" );
+
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void showDetalji() {
+        int nekretninaId = getIntent().getExtras().getInt( MainActivity.ATRAKCIJA_ID );
+
+        try {
+            atrakcija = getDatabaseHelper().getAtrakcijaDao().queryForId( nekretninaId );
+
+            TextView naziv = findViewById( R.id.detalji_naziv );
+            TextView opis = findViewById( R.id.detalji_opis );
+            TextView telefon = findViewById( R.id.detalji_telefon );
+            TextView adresa = findViewById( R.id.detalji_adresa );
+            TextView webAdresa = findViewById( R.id.detalji_webAdresa );
+            TextView radnoVreme = findViewById( R.id.detalji_radnoVreme );
+            TextView cena = findViewById( R.id.detalji_cena );
+
+            TextView poruka = findViewById( R.id.detalji_poruka );
+
+            naziv.setText( atrakcija.getmNaziv() );
+            opis.setText( atrakcija.getmOpis() );
+            telefon.setText( atrakcija.getmBrojTelefona() );
+            adresa.setText( "Adresa: " + atrakcija.getmAdresa() );
+            webAdresa.setText( "Web adresa: " + atrakcija.getmWebAdresa() );
+            radnoVreme.setText( "Radno vreme: " + atrakcija.getmRadnoVreme() );
+            cena.setText( "Cena: " + atrakcija.getmCena() + " dinara" );
+
+            poruka.setText( "      Posaljite poruku  " + atrakcija.getmBrojTelefona() );
+
+            telefon.setOnClickListener( new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+//                    Intent intent = new Intent( Intent.ACTION_DIAL );
+//                    intent.setData( Uri.parse( "tel:" + atrakcija.getmBrojTelefona() ) );
+//                    startActivity( intent );
+
+                    startActivity( new Intent( Intent.ACTION_DIAL, Uri.parse( "tel:" + atrakcija.getmBrojTelefona() ) ) );
+                }
+            } );
+
+            poruka.setOnClickListener( new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+//                    Intent intent = new Intent( Intent.ACTION_SENDTO );
+//                    intent.setData( Uri.parse( "smsto:" + atrakcija.getmBrojTelefona() ) );
+//                    startActivity( intent );
+
+                    startActivity( new Intent( Intent.ACTION_SENDTO, Uri.parse( "smsto:" + atrakcija.getmBrojTelefona() ) ) );
+
+                }
+            } );
+
+            webAdresa.setOnClickListener( new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    String url;
+                    if (atrakcija.getmWebAdresa().startsWith( "http://" )) {
+                        url = atrakcija.getmWebAdresa();
+                    } else {
+                        url = "http://" + atrakcija.getmWebAdresa();
+                    }
+                    startActivity( new Intent( Intent.ACTION_VIEW, Uri.parse( url ) ) );
+
+                }
+            } );
+
+            adresa.setOnClickListener( new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent mapIntent = new Intent( Intent.ACTION_VIEW, null );
+                    mapIntent.setPackage( "com.google.android.apps.maps" );
+                    startActivity( mapIntent );
+
+                }
+            } );
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        rec_list = findViewById( R.id.rvList );
+    }
+
+    private void deleteAtrakcija() {
+        AlertDialog dialogDelete = new AlertDialog.Builder( this )
+                .setTitle( "Brisanje atrakcije" )
+                .setMessage( "Da li zelite da obrisete \"" + atrakcija.getmNaziv() + "\"?" )
+                .setPositiveButton( "DA", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                        try {
+                            List<Slike> slike = getDatabaseHelper().getSlikeDao().queryForEq( "atrakcija", atrakcija.getmId() );
+
+                            getDatabaseHelper().getAtrakcijaDao().delete( atrakcija );
+
+                            String tekstNotifikacije = "Atrakcija je obrisana";
+
+                            boolean toast = prefs.getBoolean( getString( R.string.toast_key ), false );
+                            boolean notif = prefs.getBoolean( getString( R.string.notif_key ), false );
+
+                            if (toast) {
+                                Toast.makeText( DetailsActivity.this, tekstNotifikacije, Toast.LENGTH_LONG ).show();
+
+                            }
+                            if (notif) {
+                                NotificationManager notificationManager = (NotificationManager) getSystemService( Context.NOTIFICATION_SERVICE );
+                                NotificationCompat.Builder builder = new NotificationCompat.Builder( DetailsActivity.this, NOTIF_CHANNEL_ID );
+                                builder.setSmallIcon( android.R.drawable.ic_menu_delete );
+                                builder.setContentTitle( "Notifikacija" );
+                                builder.setContentText( tekstNotifikacije );
+
+                                Bitmap bitmap = BitmapFactory.decodeResource( getResources(), R.mipmap.ic_launcher_foreground );
+
+
+                                builder.setLargeIcon( bitmap );
+                                notificationManager.notify( 1, builder.build() );
+
+                            }
+
+                            for (Slike slika : slike) {
+                                getDatabaseHelper().getSlikeDao().delete( slika );
+                            }
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
+                        finish();
+                    }
+                } )
+                .setNegativeButton( "NE", null )
+                .show();
+    }
+
+
+    private void editAtrakcija() {
+        final Dialog dialog = new Dialog( this );
+        dialog.setContentView( R.layout.edit_layout );
+        dialog.setCanceledOnTouchOutside( false );
+
+        final EditText naziv = dialog.findViewById( R.id.edit_naziv );
+        final EditText opis = dialog.findViewById( R.id.edit_opis );
+        final EditText telefon = dialog.findViewById( R.id.edit_telefon );
+        final EditText adresa = dialog.findViewById( R.id.edit_adresa );
+        final EditText webAdresa = dialog.findViewById( R.id.edit_webAdresa );
+        final EditText radnoVreme = dialog.findViewById( R.id.edit_RadnoVreme );
+        final EditText cena = dialog.findViewById( R.id.edit_cena );
+
+
+        naziv.setText( atrakcija.getmNaziv() );
+        opis.setText( atrakcija.getmOpis() );
+        telefon.setText( atrakcija.getmBrojTelefona() );
+        adresa.setText( atrakcija.getmAdresa() );
+        webAdresa.setText( atrakcija.getmWebAdresa() );
+        radnoVreme.setText( atrakcija.getmRadnoVreme() );
+        cena.setText( atrakcija.getmCena() );
+
+        Button add = dialog.findViewById( R.id.edit_btn_save );
+        add.setOnClickListener( new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                if (Tools.validateInput( naziv )
+                        && Tools.validateInput( opis )
+                        && Tools.validateInput( adresa )
+                        && Tools.validateInput( telefon )
+                        && Tools.validateInput( webAdresa )
+                        && Tools.validateInput( radnoVreme )
+                        && Tools.validateInput( cena )
+                ) {
+
+
+                    atrakcija.setmNaziv( naziv.getText().toString() );
+                    atrakcija.setmOpis( opis.getText().toString() );
+                    atrakcija.setmBrojTelefona( telefon.getText().toString() );
+                    atrakcija.setmAdresa( adresa.getText().toString() );
+                    atrakcija.setmWebAdresa( webAdresa.getText().toString() );
+                    atrakcija.setmRadnoVreme( radnoVreme.getText().toString() );
+                    atrakcija.setmCena( cena.getText().toString() );
+
+
+                    try {
+                        getDatabaseHelper().getAtrakcijaDao().update( atrakcija );
+
+                        String tekstNotifikacije = "Atrakcija je izmenjena";
+
+                        boolean toast = prefs.getBoolean( getString( R.string.toast_key ), false );
+                        boolean notif = prefs.getBoolean( getString( R.string.notif_key ), false );
+
+                        if (toast) {
+                            Toast.makeText( DetailsActivity.this, tekstNotifikacije, Toast.LENGTH_LONG ).show();
+
+                        }
+                        if (notif) {
+                            NotificationManager notificationManager = (NotificationManager) getSystemService( Context.NOTIFICATION_SERVICE );
+                            NotificationCompat.Builder builder = new NotificationCompat.Builder( DetailsActivity.this, NOTIF_CHANNEL_ID );
+                            builder.setSmallIcon( android.R.drawable.ic_menu_edit );
+                            builder.setContentTitle( "Notifikacija" );
+                            builder.setContentText( tekstNotifikacije );
+
+                            Bitmap bitmap = BitmapFactory.decodeResource( getResources(), R.mipmap.ic_launcher_foreground );
+
+
+                            builder.setLargeIcon( bitmap );
+                            notificationManager.notify( 1, builder.build() );
+
+                        }
+
+                        refreshNekretnine();
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+
+                    dialog.dismiss();
+
+                }
+            }
+
+        } );
+
+        Button cancel = dialog.findViewById( R.id.edit_btn_cancel );
+        cancel.setOnClickListener( new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        } );
+
+        dialog.show();
     }
 
     private void reset() {
@@ -184,12 +463,12 @@ public class DetailsActivity extends AppCompatActivity implements SlikaAdapter.O
                 break;
 
             case R.id.edit:
-
+                editAtrakcija();
                 setTitle( "Izmena atrakcija" );
                 break;
 
             case R.id.delete:
-
+                deleteAtrakcija();
                 setTitle( "Brisanje atrakcija" );
                 break;
         }
@@ -353,6 +632,20 @@ public class DetailsActivity extends AppCompatActivity implements SlikaAdapter.O
             databaseHelper = OpenHelperManager.getHelper( this, DatabaseHelper.class );
         }
         return databaseHelper;
+    }
+
+    private void createNotificationChannel() {
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = "My Channel";
+            String description = "Description of My Channel";
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel( NOTIF_CHANNEL_ID, name, importance );
+            channel.setDescription( description );
+
+            NotificationManager notificationManager = getSystemService( NotificationManager.class );
+            notificationManager.createNotificationChannel( channel );
+        }
     }
 
     @Override
