@@ -1,8 +1,10 @@
-package com.example.turistickivodicslike;
+package com.example.turistickivodicslike.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+
+import com.example.turistickivodicslike.R;
 
 public class MainActivity extends AppCompatActivity {
 
