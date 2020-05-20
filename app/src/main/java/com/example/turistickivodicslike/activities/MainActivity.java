@@ -40,6 +40,7 @@ import com.example.turistickivodicslike.db.DatabaseHelper;
 import com.example.turistickivodicslike.db.model.Atrakcija;
 import com.example.turistickivodicslike.dialog.AboutDialog;
 import com.example.turistickivodicslike.settings.SettingsActivity;
+import com.example.turistickivodicslike.tools.Tools;
 import com.j256.ormlite.android.apptools.OpenHelperManager;
 
 import java.sql.SQLException;
@@ -118,55 +119,61 @@ public class MainActivity extends AppCompatActivity implements MainAdapter.OnIte
                 radnoVreme = dialog.findViewById( R.id.add_radnoVreme );
                 cena = dialog.findViewById( R.id.add_cena );
 
+                if (Tools.validateInput( naziv )
+                        && Tools.validateInput( opis )
+                        && Tools.validateInput( telefon )
+                        && Tools.validateInput( adresa )
+                        && Tools.validateInput( webAdresa )
+                        && Tools.validateInput( radnoVreme )
+                        && Tools.validateInput( cena )
+                ) {
 
-                Atrakcija nekretnine = new Atrakcija();
+                    Atrakcija nekretnine = new Atrakcija();
 
-                nekretnine.setmNaziv( naziv.getText().toString() );
-                nekretnine.setmOpis( opis.getText().toString() );
-                nekretnine.setmBrojTelefona( telefon.getText().toString() );
-                nekretnine.setmAdresa( adresa.getText().toString() );
-                nekretnine.setmWebAdresa( webAdresa.getText().toString() );
-                nekretnine.setmRadnoVreme( radnoVreme.getText().toString() );
-                nekretnine.setmCena( cena.getText().toString() );
+                    nekretnine.setmNaziv( naziv.getText().toString() );
+                    nekretnine.setmOpis( opis.getText().toString() );
+                    nekretnine.setmBrojTelefona( telefon.getText().toString() );
+                    nekretnine.setmAdresa( adresa.getText().toString() );
+                    nekretnine.setmWebAdresa( webAdresa.getText().toString() );
+                    nekretnine.setmRadnoVreme( radnoVreme.getText().toString() );
+                    nekretnine.setmCena( cena.getText().toString() );
 
-                try {
-                    getDatabaseHelper().getAtrakcijaDao().create( nekretnine );
+                    try {
+                        getDatabaseHelper().getAtrakcijaDao().create( nekretnine );
 
-                    String tekstNotifikacije = "Uneta nova atrakcija";
+                        String tekstNotifikacije = "Uneta nova atrakcija";
 
-                    boolean toast = prefs.getBoolean( getString( R.string.toast_key ), false );
-                    boolean notif = prefs.getBoolean( getString( R.string.notif_key ), false );
+                        boolean toast = prefs.getBoolean( getString( R.string.toast_key ), false );
+                        boolean notif = prefs.getBoolean( getString( R.string.notif_key ), false );
 
-                    if (toast) {
-                        Toast.makeText( MainActivity.this, tekstNotifikacije, Toast.LENGTH_LONG ).show();
+                        if (toast) {
+                            Toast.makeText( MainActivity.this, tekstNotifikacije, Toast.LENGTH_LONG ).show();
 
+                        }
+                        if (notif) {
+                            NotificationManager notificationManager = (NotificationManager) getSystemService( Context.NOTIFICATION_SERVICE );
+                            NotificationCompat.Builder builder = new NotificationCompat.Builder( MainActivity.this, NOTIF_CHANNEL_ID );
+                            builder.setSmallIcon( R.drawable.heart );
+                            builder.setContentTitle( "Notifikacija" );
+                            builder.setContentText( tekstNotifikacije );
+
+                            Bitmap bitmap = BitmapFactory.decodeResource( getResources(), R.mipmap.ic_launcher_foreground );
+
+
+                            builder.setLargeIcon( bitmap );
+                            notificationManager.notify( 1, builder.build() );
+
+                        }
+
+                        refresh();
+
+                    } catch (SQLException e) {
+                        e.printStackTrace();
                     }
-                    if (notif) {
-                        NotificationManager notificationManager = (NotificationManager) getSystemService( Context.NOTIFICATION_SERVICE );
-                        NotificationCompat.Builder builder = new NotificationCompat.Builder( MainActivity.this, NOTIF_CHANNEL_ID );
-                        builder.setSmallIcon( R.drawable.heart );
-                        builder.setContentTitle( "Notifikacija" );
-                        builder.setContentText( tekstNotifikacije );
 
-                        Bitmap bitmap = BitmapFactory.decodeResource( getResources(), R.mipmap.ic_launcher_foreground );
-
-
-                        builder.setLargeIcon( bitmap );
-                        notificationManager.notify( 1, builder.build() );
-
-                    }
-
-                    refresh();
-
-                } catch (SQLException e) {
-                    e.printStackTrace();
+                    dialog.dismiss();
                 }
-
-                dialog.dismiss();
-
-
             }
-
 
         } );
 
